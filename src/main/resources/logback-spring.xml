@@ -1,0 +1,60 @@
+<configuration>
+    <!-- Define a default logging level for the application -->
+    <property name="LOG_LEVEL" value="INFO" />
+
+    <!-- Define where log files will be stored -->
+    <property name="LOG_FILE" value="logs/application.log" />
+
+    <!-- Define the format of the log messages -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" />
+
+    <!-- Console Appender: Outputs logs to the console -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- Apply the specified logging pattern -->
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- File Appender: Writes logs to a rolling file -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!-- Main log file -->
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- Creates a new log file each day -->
+            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <!-- Retain logs for the last 30 days -->
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <!-- Apply the specified logging pattern -->
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Configure logging for Hibernate SQL execution -->
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <!-- Logs are only output to the console -->
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Configure logging for Hibernate SQL type descriptors -->
+    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" additivity="false">
+        <!-- Logs are only output to the console -->
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Configure logging for your application's package -->
+    <logger name="com.bank.project" level="DEBUG" additivity="false">
+        <!-- Logs are output to both console and file -->
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </logger>
+
+    <!-- Root Logger: Configures the default logging level for all logs -->
+    <root level="${LOG_LEVEL}">
+        <!-- Logs are output to both console and file -->
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE" />
+    </root>
+</configuration>

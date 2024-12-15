@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DiffGenerationConfig">
+    <option name="sourceModelValue" value="BankProjectSpring:entityManagerFactory" />
+    <option name="targetDbValue" value="710c92ef-a027-4020-9223-f23a583c58af" />
+  </component>
+</project>

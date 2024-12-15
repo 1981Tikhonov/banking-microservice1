@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.30.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1734030283044-7" author="admin">
+        <addColumn tableName="agreement">
+            <column name="created_at" type="DATETIME"/>
+            <column name="updated_at" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1734030283044-1" author="admin">
+        <dropNotNullConstraint columnDataType="bigint" columnName="account_id" tableName="agreement"/>
+    </changeSet>
+    <changeSet id="1734030283044-2" author="admin">
+        <addAutoIncrement columnDataType="bigint" columnName="id" tableName="agreement"/>
+    </changeSet>
+    <changeSet id="1734030283044-3" author="admin">
+        <dropNotNullConstraint columnDataType="double" columnName="interest_rate" tableName="agreement"/>
+    </changeSet>
+    <changeSet id="1734030283044-4" author="admin">
+        <dropNotNullConstraint columnDataType="bigint" columnName="product_id" tableName="agreement"/>
+    </changeSet>
+    <changeSet id="1734030283044-5" author="admin">
+        <dropNotNullConstraint columnDataType="varchar(255)" columnName="status" tableName="agreement"/>
+    </changeSet>
+    <changeSet id="1734030283044-6" author="admin">
+        <dropNotNullConstraint columnDataType="double" columnName="sum" tableName="agreement"/>
+    </changeSet>
+
+</databaseChangeLog>

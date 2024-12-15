@@ -1,0 +1,407 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- Create the Manager table -->
+    <changeSet id="5" author="Mikhail">
+        <createTable tableName="manager">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+            <column name="username" type="varchar(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="password" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="role" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create the Client table -->
+    <changeSet id="3" author="Mikhail">
+        <createTable tableName="client">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="first_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="phone" type="varchar(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="tax_code" type="varchar(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="manager_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign key constraint to manager_id -->
+        <addForeignKeyConstraint
+                baseTableName="client"
+                baseColumnNames="manager_id"
+                referencedTableName="manager"
+                referencedColumnNames="id"
+                constraintName="fk_client_manager"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- Create the Currency table -->
+    <changeSet id="4" author="Mikhail">
+        <createTable tableName="currency">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="symbol" type="varchar(10)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exchange_rate" type="decimal(15, 6)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create the Product table -->
+    <changeSet id="6" author="Mikhail">
+        <createTable tableName="product">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="manager_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interest_rate" type="decimal(15,2)"/>
+            <column name="credit_limit" type="decimal(15,2)"/>
+        </createTable>
+
+        <!-- Add foreign key constraint to manager_id -->
+        <addForeignKeyConstraint
+                baseTableName="product"
+                baseColumnNames="manager_id"
+                referencedTableName="manager"
+                referencedColumnNames="id"
+                constraintName="fk_product_manager"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- Create the Account table -->
+    <changeSet id="1" author="Mikhail">
+        <createTable tableName="account">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="balance" type="decimal(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_code" type="integer">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign key constraint to client_id -->
+        <addForeignKeyConstraint
+                baseTableName="account"
+                baseColumnNames="client_id"
+                referencedTableName="client"
+                referencedColumnNames="id"
+                constraintName="fk_account_client"
+                onDelete="CASCADE" />
+    </changeSet>
+
+    <!-- Create the Agreement table -->
+    <changeSet id="2" author="Mikhail">
+        <createTable tableName="agreement">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="account_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="interest_rate" type="double precision">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="sum" type="double precision">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+        <!-- Add foreign key constraints to account_id and product_id -->
+        <addForeignKeyConstraint
+                baseTableName="agreement"
+                baseColumnNames="account_id"
+                referencedTableName="account"
+                referencedColumnNames="id"
+                constraintName="fk_agreement_account"
+                onDelete="CASCADE"/>
+
+        <addForeignKeyConstraint
+                baseTableName="agreement"
+                baseColumnNames="product_id"
+                referencedTableName="product"
+                referencedColumnNames="id"
+                constraintName="fk_agreement_product"
+                onDelete="CASCADE"/>
+    </changeSet>
+
+    <!-- Create the Tax Codes table -->
+    <changeSet id="7" author="Mikhail">
+        <createTable tableName="tax_codes">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="name" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <!-- Create the Transaction table -->
+    <changeSet id="8" author="Mikhail">
+        <createTable tableName="transaction">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="debit_account_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="credit_account_id" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="type" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="decimal(15,2)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="9" author="Mikhail">
+        <insert tableName="manager">
+            <column name="id" value="1"/>
+            <column name="first_name" value="Ivan"/>
+            <column name="last_name" value="Petrov"/>
+            <column name="status" value="active"/>
+            <column name="description" value="Senior Manager"/>
+            <column name="username" value="ivan_petrov"/>
+            <column name="password" value="password123"/>
+            <column name="role" value="ADMIN"/>
+        </insert>
+        <insert tableName="manager">
+            <column name="id" value="2"/>
+            <column name="first_name" value="Anna"/>
+            <column name="last_name" value="Sidorova"/>
+            <column name="status" value="active"/>
+            <column name="description" value="Manager of Sales"/>
+            <column name="username" value="anna_sidorova"/>
+            <column name="password" value="password456"/>
+            <column name="role" value="USER"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="10" author="Mikhail">
+        <insert tableName="client">
+            <column name="id" value="11"/>
+            <column name="first_name" value="Dmitry"/>
+            <column name="last_name" value="Ivanov"/>
+            <column name="email" value="dmitry.ivanov@mail.com"/>
+            <column name="phone" value="1234567890"/>
+            <column name="status" value="active"/>
+            <column name="tax_code" value="TX12345"/>
+            <column name="manager_id" value="1"/>
+            <column name="address" value="Moscow, Tverskaya 10"/>
+        </insert>
+        <insert tableName="client">
+            <column name="id" value="12"/>
+            <column name="first_name" value="Olga"/>
+            <column name="last_name" value="Morozova"/>
+            <column name="email" value="olga.morozova@mail.com"/>
+            <column name="phone" value="0987654321"/>
+            <column name="status" value="inactive"/>
+            <column name="tax_code" value="TX67890"/>
+            <column name="manager_id" value="2"/>
+            <column name="address" value="St. Petersburg, Nevsky 5"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="11" author="Mikhail">
+        <insert tableName="currency">
+            <column name="id" value="1"/>
+            <column name="code" value="USD"/>
+            <column name="name" value="US Dollar"/>
+            <column name="symbol" value="$"/>
+            <column name="exchange_rate" value="1.0"/>
+        </insert>
+        <insert tableName="currency">
+            <column name="id" value="2"/>
+            <column name="code" value="EUR"/>
+            <column name="name" value="Euro"/>
+            <column name="symbol" value="€"/>
+            <column name="exchange_rate" value="0.85"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="12" author="Mikhail">
+        <insert tableName="product">
+            <column name="id" value="1"/>
+            <column name="manager_id" value="1"/>
+            <column name="name" value="Savings Account"/>
+            <column name="status" value="active"/>
+            <column name="currency_code" value="USD"/>
+            <column name="interest_rate" value="2.5"/>
+            <column name="credit_limit" value="5000"/>
+        </insert>
+        <insert tableName="product">
+            <column name="id" value="2"/>
+            <column name="manager_id" value="2"/>
+            <column name="name" value="Credit Card"/>
+            <column name="status" value="active"/>
+            <column name="currency_code" value="EUR"/>
+            <column name="interest_rate" value="15.0"/>
+            <column name="credit_limit" value="3000"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="13" author="Mikhail">
+        <insert tableName="account">
+            <column name="id" value="1"/>
+            <column name="client_id" value="11"/>
+            <column name="name" value="Main Account"/>
+            <column name="type" value="savings"/>
+            <column name="status" value="active"/>
+            <column name="balance" value="10000.00"/>
+            <column name="currency_code" value="1"/>
+        </insert>
+        <insert tableName="account">
+            <column name="id" value="2"/>
+            <column name="client_id" value="12"/>
+            <column name="name" value="Secondary Account"/>
+            <column name="type" value="current"/>
+            <column name="status" value="blocked"/>
+            <column name="balance" value="5000.00"/>
+            <column name="currency_code" value="2"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="14" author="Mikhail">
+        <insert tableName="agreement">
+            <column name="id" value="1"/>
+            <column name="account_id" value="1"/>
+            <column name="product_id" value="1"/>
+            <column name="interest_rate" value="2.5"/>
+            <column name="status" value="active"/>
+            <column name="sum" value="10000.00"/>
+        </insert>
+        <insert tableName="agreement">
+            <column name="id" value="2"/>
+            <column name="account_id" value="2"/>
+            <column name="product_id" value="2"/>
+            <column name="interest_rate" value="15.0"/>
+            <column name="status" value="active"/>
+            <column name="sum" value="5000.00"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="15" author="Mikhail">
+        <insert tableName="transaction">
+            <column name="id" value="1"/>
+            <column name="debit_account_id" value="1"/>
+            <column name="credit_account_id" value="2"/>
+            <column name="type" value="transfer"/>
+            <column name="amount" value="2000.00"/>
+            <column name="description" value="Account transfer"/>
+        </insert>
+        <insert tableName="transaction">
+            <column name="id" value="2"/>
+            <column name="debit_account_id" value="2"/>
+            <column name="credit_account_id" value="1"/>
+            <column name="type" value="deposit"/>
+            <column name="amount" value="1500.00"/>
+            <column name="description" value="Deposit to account"/>
+        </insert>
+    </changeSet>
+
+    <changeSet id="16" author="Mikhail">
+        <insert tableName="tax_codes">
+            <column name="id" value="1"/>
+            <column name="code" value="TX12345"/>
+            <column name="name" value="Income Tax"/>
+        </insert>
+        <insert tableName="tax_codes">
+            <column name="id" value="2"/>
+            <column name="code" value="TX67890"/>
+            <column name="name" value="Corporate Tax"/>
+        </insert>
+    </changeSet>
+    <include file="db/changelog/2024/12/12-01-changelog.xml"/>
+    <include file="db/changelog/2024/12/12-02-changelog.xml"/>
+
+
+</databaseChangeLog>

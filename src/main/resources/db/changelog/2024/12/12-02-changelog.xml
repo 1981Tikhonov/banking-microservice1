@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.30.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1734032371265-4" author="admin">
+        <addColumn tableName="transaction">
+            <column name="created_at" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1734032371265-5" author="admin">
+        <addNotNullConstraint columnName="created_at" tableName="transaction"/>
+    </changeSet>
+    <changeSet id="1734032371265-1" author="admin">
+        <dropColumn columnName="amount" tableName="transaction"/>
+    </changeSet>
+    <changeSet id="1734032371265-2" author="admin">
+        <addColumn tableName="transaction">
+            <column name="amount" type="DOUBLE">
+                <constraints nullable="false" validateNullable="true"/>
+            </column>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1734032371265-3" author="admin">
+        <addAutoIncrement columnDataType="bigint" columnName="id" tableName="transaction"/>
+    </changeSet>
+
+</databaseChangeLog>
