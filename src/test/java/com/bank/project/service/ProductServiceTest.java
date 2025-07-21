@@ -1,10 +1,14 @@
 package com.bank.project.service;
 
 import com.bank.project.entity.Product;
+import com.bank.project.entity.enums.ProductStatus;
 import com.bank.project.repository.ProductRepository;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -29,10 +33,10 @@ class ProductServiceTest {
         product = new Product();
         product.setId(1L);
         product.setName("Product A");
-        product.setStatus("ACTIVE");
+        product.setStatus(ProductStatus.valueOf("ACTIVE"));
         product.setCurrencyCode("USD");
-        product.setInterestRate(5.0);
-        product.setCreditLimit(10000.0);
+        product.setInterestRate(BigDecimal.valueOf(5.0));
+        product.setCreditLimit(BigDecimal.valueOf(10000.0));
         product.setCreatedAt(LocalDateTime.now());
         product.setUpdatedAt(LocalDateTime.now());
     }
@@ -80,10 +84,10 @@ class ProductServiceTest {
     void testUpdateProduct() {
         Product updatedProductDetails = new Product();
         updatedProductDetails.setName("Updated Product");
-        updatedProductDetails.setStatus("INACTIVE");
+        updatedProductDetails.setStatus(ProductStatus.valueOf("INACTIVE"));
         updatedProductDetails.setCurrencyCode("EUR");
-        updatedProductDetails.setInterestRate(6.0);
-        updatedProductDetails.setCreditLimit(15000.0);
+        updatedProductDetails.setInterestRate(BigDecimal.valueOf(6.0));
+        updatedProductDetails.setCreditLimit(BigDecimal.valueOf(15000.0));
 
         when(productRepository.findById(1L)).thenReturn(Optional.of(product));
         when(productRepository.save(any(Product.class))).thenReturn(product);
@@ -91,10 +95,10 @@ class ProductServiceTest {
         Product updatedProduct = productService.updateProduct(1L, updatedProductDetails);
 
         assertEquals("Updated Product", updatedProduct.getName());
-        assertEquals("INACTIVE", updatedProduct.getStatus());
+        assertEquals(ProductStatus.INACTIVE, updatedProduct.getStatus());
         assertEquals("EUR", updatedProduct.getCurrencyCode());
-        assertEquals(6.0, updatedProduct.getInterestRate());
-        assertEquals(15000.0, updatedProduct.getCreditLimit());
+        assertEquals(BigDecimal.valueOf(6.0), updatedProduct.getInterestRate());
+        assertEquals(BigDecimal.valueOf(15000.0), updatedProduct.getCreditLimit());
         verify(productRepository, times(1)).save(updatedProduct);
     }
 
@@ -104,7 +108,7 @@ class ProductServiceTest {
 
         boolean result = productService.deleteProduct(1L);
 
-        assertTrue(result);
+        assertEquals(true, result);
         verify(productRepository, times(1)).delete(product);
     }
 
@@ -127,13 +131,13 @@ class ProductServiceTest {
 
     @Test
     void testFindProductsByStatus() {
-        when(productRepository.findByStatus("ACTIVE")).thenReturn(List.of(product));
+        when(productRepository.findByStatus(ProductStatus.valueOf("ACTIVE"))).thenReturn(List.of(product));
 
         List<Product> products = productService.findProductsByStatus("ACTIVE");
 
         assertNotNull(products);
         assertFalse(products.isEmpty());
-        assertEquals("ACTIVE", products.get(0).getStatus());
+        Assertions.assertEquals(ProductStatus.ACTIVE, products.get(0).getStatus());
     }
 
     @Test
@@ -149,9 +153,9 @@ class ProductServiceTest {
 
     @Test
     void testFindProductsByInterestRate() {
-        when(productRepository.findByInterestRate(5.0)).thenReturn(List.of(product));
+        when(productRepository.findByInterestRate(BigDecimal.valueOf(5.0))).thenReturn(List.of(product));
 
-        List<Product> products = productService.findProductsByInterestRate(5.0);
+        List<Product> products = productService.findProductsByInterestRate(BigDecimal.valueOf(5.0));
 
         assertNotNull(products);
         assertFalse(products.isEmpty());
@@ -160,9 +164,9 @@ class ProductServiceTest {
 
     @Test
     void testFindProductsByCreditLimit() {
-        when(productRepository.findByCreditLimit(10000.0)).thenReturn(List.of(product));
+        when(productRepository.findByCreditLimit(BigDecimal.valueOf(10000.0))).thenReturn(List.of(product));
 
-        List<Product> products = productService.findProductsByCreditLimit(10000.0);
+        List<Product> products = productService.findProductsByCreditLimit(BigDecimal.valueOf(10000.0));
 
         assertNotNull(products);
         assertFalse(products.isEmpty());
@@ -171,7 +175,7 @@ class ProductServiceTest {
 
     @Test
     void testFindProductsByStatusAndCurrencyCode() {
-        when(productRepository.findByStatusAndCurrencyCode("ACTIVE", "USD")).thenReturn(List.of(product));
+        when(productRepository.findByStatusAndCurrencyCode(ProductStatus.valueOf("ACTIVE"), "USD")).thenReturn(List.of(product));
 
         List<Product> products = productService.findProductsByStatusAndCurrencyCode("ACTIVE", "USD");
 
@@ -183,9 +187,9 @@ class ProductServiceTest {
 
     @Test
     void testFindProductsByStatusAndInterestRate() {
-        when(productRepository.findByStatusAndInterestRate("ACTIVE", 5.0)).thenReturn(List.of(product));
+        when(productRepository.findByStatusAndInterestRate(ProductStatus.valueOf(String.valueOf(ProductStatus.ACTIVE)), BigDecimal.valueOf(5.0))).thenReturn(List.of(product));
 
-        List<Product> products = productService.findProductsByStatusAndInterestRate("ACTIVE", 5.0);
+        List<Product> products = productService.findProductsByStatusAndInterestRate(String.valueOf(ProductStatus.ACTIVE), 5.0);
 
         assertNotNull(products);
         assertFalse(products.isEmpty());

@@ -1,7 +1,7 @@
 package com.bank.project.controller;
 
 import com.bank.project.entity.Account;
-import com.bank.project.service.AccountService;
+import com.bank.project.service.AccountServiceInterface;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -27,10 +27,10 @@ import java.util.Optional;
 public class AccountController {
 
     private static final Logger logger = LoggerFactory.getLogger(AccountController.class);
-    private final AccountService accountService;
+    private final AccountServiceInterface accountService;
 
     @Autowired
-    public AccountController(AccountService accountService) {
+    public AccountController(AccountServiceInterface accountService) {
         this.accountService = accountService;
     }
 
@@ -47,6 +47,28 @@ public class AccountController {
         logger.info("Creating account for client with ID: {}", account.getClientId());
         Account createdAccount = accountService.createAccount(account);
         return ResponseEntity.status(201).body(createdAccount);
+    }
+    
+    @Operation(summary = "Test AOP functionality", description = "Endpoint to demonstrate AOP logging and performance monitoring")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Test completed successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/test-aop")
+    public ResponseEntity<String> testAop() {
+        logger.info("Testing AOP functionality...");
+        
+        // Имитация работы с задержкой
+        try {
+            Thread.sleep(1200); // Задержка более 1 секунды для теста предупреждений
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        // Вызов тестового сервиса
+        accountService.performTestOperation();
+        
+        return ResponseEntity.ok("AOP test completed. Check logs for details.");
     }
 
     @Operation(summary = "Get account by ID", description = "Retrieves account details by account ID.")

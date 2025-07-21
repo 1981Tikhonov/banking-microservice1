@@ -1,133 +1,201 @@
 package com.bank.project.repository;
 
+import com.bank.project.config.TestConfig;
 import com.bank.project.entity.Client;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.test.context.ActiveProfiles;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.*;
 
 @DataJpaTest
+@ActiveProfiles("test")
+@Testcontainers
+@Import(TestConfig.class)
 class ClientRepositoryTest {
+
+    @Container
+    private static final PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:13")
+            .withDatabaseName("testdb")
+            .withUsername("test")
+            .withPassword("test");
 
     @Autowired
     private ClientRepository clientRepository;
 
-    private Client client2;
+    private Client activeClient;
+    private Client inactiveClient;
 
     @BeforeEach
     void setUp() {
-        // Создаем примеры данных для тестирования
-        Client client1 = new Client();
-        client1.setManagerId(1L);
-        client1.setStatus("ACTIVE");
-        client1.setTaxCode("1234567890");
-        client1.setFirstName("John");
-        client1.setLastName("Doe");
-        client1.setEmail("john.doe@example.com");
-        client1.setPhone("123456789");
-        client1.setAddress("123 Main St");
-        client1.setCreatedAt(LocalDateTime.now());
-        client1.setUpdatedAt(LocalDateTime.now());
+        // Create test data
+        // Create test data
+        activeClient = Client.builder()
+                .firstName("John")
+                .lastName("Doe")
+                .email("john.doe@example.com")
+                .phone("+1234567890")
+                .taxCode("1234567890")
+                .address("123 Main St, City")
+                .status("ACTIVE")
+                .createdAt(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-        client2 = new Client();
-        client2.setManagerId(2L);
-        client2.setStatus("INACTIVE");
-        client2.setTaxCode("0987654321");
-        client2.setFirstName("Jane");
-        client2.setLastName("Smith");
-        client2.setEmail("jane.smith@example.com");
-        client2.setPhone("987654321");
-        client2.setAddress("456 Another St");
-        client2.setCreatedAt(LocalDateTime.now());
-        client2.setUpdatedAt(LocalDateTime.now());
+        inactiveClient = Client.builder()
+                .firstName("Jane")
+                .lastName("Smith")
+                .email("jane.smith@example.com")
+                .phone("+1987654321")
+                .taxCode("0987654321")
+                .address("456 Oak Ave, Town")
+                .status("INACTIVE")
+                .createdAt(LocalDateTime.now().minusDays(1))
+                .updatedAt(LocalDateTime.now())
+                .build();
 
-        // Сохраняем данные в базу для тестирования
-        clientRepository.save(client1);
-        clientRepository.save(client2);
+        clientRepository.deleteAll();
+        clientRepository.save(activeClient);
+        Client savedInactiveClient = clientRepository.save(inactiveClient);
     }
 
     @Test
-    void testFindByStatus() {
-        // Проверка метода поиска по статусу
-        List<Client> clients = clientRepository.findByStatus("ACTIVE");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getStatus()).isEqualTo("ACTIVE");
+    void findById_WhenClientExists_ShouldReturnClient() {
+        // When
+        Optional<Client> found = clientRepository.findById(activeClient.getId());
+
+        // Then
+        assertTrue(found.isPresent());
+        assertEquals(activeClient.getEmail(), found.get().getEmail());
     }
 
     @Test
-    void testFindByManagerId() {
-        // Проверка метода поиска по managerId
-        List<Client> clients = clientRepository.findByManagerId(1L);
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getManagerId()).isEqualTo(1L);
+    void findById_WhenClientNotExists_ShouldReturnEmpty() {
+        // When
+        Optional<Client> found = clientRepository.findById(999L);
+
+
+        // Then
+        assertFalse(found.isPresent());
+    }
+
+
+    @Test
+    void findByStatus_ShouldReturnMatchingClients() {
+        // When
+        List<Client> activeClients = (List<Client>) clientRepository.findByStatus("ACTIVE");
+        List<Client> inactiveClients = (List<Client>) clientRepository.findByStatus("INACTIVE");
+
+        // Then
+        assertEquals(1, activeClients.size());
+        assertEquals("ACTIVE", activeClients.get(0).getStatus());
+        assertEquals(1, inactiveClients.size());
+        assertEquals("INACTIVE", inactiveClients.get(0).getStatus());
     }
 
     @Test
-    void testFindByTaxCode() {
-        // Проверка метода поиска по налоговому коду
-        List<Client> clients = clientRepository.findByTaxCode("1234567890");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getTaxCode()).isEqualTo("1234567890");
+    void findByEmail_ShouldReturnMatchingClient() {
+        // When
+        Optional<Client> found = clientRepository.findByEmail("john.doe@example.com");
+
+        // Then
+        assertTrue(found.isPresent());
+        assertEquals("john.doe@example.com", found.get().getEmail());
     }
 
     @Test
-    void testFindByFirstName() {
-        // Проверка метода поиска по имени
-        List<Client> clients = clientRepository.findByFirstName("John");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getFirstName()).isEqualTo("John");
+    void existsByEmail_ShouldReturnTrueForExistingEmail() {
+        // When
+        boolean exists = clientRepository.existsByEmail("john.doe@example.com");
+        boolean notExists = clientRepository.existsByEmail("nonexistent@example.com");
+
+        // Then
+        assertTrue(exists);
+        assertFalse(notExists);
     }
 
     @Test
-    void testFindByLastName() {
-        // Проверка метода поиска по фамилии
-        List<Client> clients = clientRepository.findByLastName("Smith");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getLastName()).isEqualTo("Smith");
+    void findByTaxCode_ShouldReturnMatchingClient() {
+        // When
+        List<Client> found = clientRepository.findByTaxCode("1234567890");
+
+        // Then
+        assertFalse(found.isEmpty());
+        assertEquals("1234567890", found.get(0).getTaxCode());
     }
 
     @Test
-    void testFindByEmail() {
-        // Проверка метода поиска по email
-        List<Client> clients = clientRepository.findByEmail("john.doe@example.com");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getEmail()).isEqualTo("john.doe@example.com");
+    void existsByTaxCode_ShouldReturnTrueForExistingTaxCode() {
+        // When
+        boolean exists = clientRepository.existsByTaxCode("1234567890");
+        boolean notExists = clientRepository.existsByTaxCode("9999999999");
+
+        // Then
+        assertTrue(exists);
+        assertFalse(notExists);
     }
 
     @Test
-    void testFindByPhone() {
-        // Проверка метода поиска по телефону
-        List<Client> clients = clientRepository.findByPhone("987654321");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getPhone()).isEqualTo("987654321");
+    void findByAddressContainingIgnoreCase_ShouldReturnMatchingClients() {
+        // When
+        List<Client> clients = (List<Client>) clientRepository.findByAddressContainingIgnoreCase("main");
+
+        // Then
+        assertEquals(1, clients.size());
+        assertTrue(clients.get(0).getAddress().toLowerCase().contains("main"));
     }
 
     @Test
-    void testFindByAddress() {
-        // Проверка метода поиска по адресу
-        List<Client> clients = clientRepository.findByAddress("123 Main St");
-        assertThat(clients).hasSize(1);
-        assertThat(clients.get(0).getAddress()).isEqualTo("123 Main St");
+    void findAllWithPagination_ShouldReturnPageOfClients() {
+        // Given
+        Pageable pageable = PageRequest.of(0, 1, Sort.by("lastName").ascending());
+
+        // When
+        Page<Client> page = clientRepository.findAll(pageable);
+
+        // Then
+        assertEquals(2, page.getTotalElements());
+        assertEquals(1, page.getNumberOfElements());
+        assertEquals(2, page.getTotalPages());
     }
 
     @Test
-    void testFindByCreatedAtBetween() {
-        // Проверка метода поиска по диапазону дат создания
-        LocalDateTime now = LocalDateTime.now();
-        List<Client> clients = clientRepository.findByCreatedAtBetween(now.minusDays(1), now.plusDays(1));
-        assertThat(clients).hasSize(2);
+    void updateClientStatus_ShouldUpdateStatus() {
+        // When
+        int updated = clientRepository.updateClientStatus(activeClient.getId(), "SUSPENDED");
+        Optional<Client> updatedClient = clientRepository.findById(activeClient.getId());
+
+        // Then
+        assertEquals(1, updated);
+        assertTrue(updatedClient.isPresent());
+        assertEquals("SUSPENDED", updatedClient.get().getStatus());
     }
 
     @Test
-    void testFindByUpdatedAtAfter() {
-        // Проверка метода поиска по дате обновления
-        LocalDateTime now = LocalDateTime.now();
-        List<Client> clients = clientRepository.findByUpdatedAtAfter(now.minusDays(1));
-        assertThat(clients).hasSize(2);
+    void findByCreatedAtBetween_ShouldReturnClientsInDateRange() {
+        // Given
+        LocalDateTime start = LocalDateTime.now().minusDays(2);
+        LocalDateTime end = LocalDateTime.now().plusDays(1);
+
+        // When
+        List<Client> clients = clientRepository.findByCreatedAtBetween(start, end);
+
+
+        // Then
+        assertEquals(2, clients.size());
     }
 }

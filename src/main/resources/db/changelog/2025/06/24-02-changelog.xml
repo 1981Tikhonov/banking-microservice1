@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.30.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1750793195676-24" author="admin">
+        <dropForeignKeyConstraint baseTableName="client" constraintName="fk_client_manager"/>
+    </changeSet>
+    <changeSet id="1750793195676-8" author="admin">
+        <addColumn tableName="client">
+            <column name="birth_date" type="DATE"/>
+            <column name="created_at" type="DATETIME"/>
+            <column name="department_code" type="VARCHAR(255)"/>
+            <column name="issue_date" type="DATE"/>
+            <column name="issued_by" type="VARCHAR(255)"/>
+            <column name="middle_name" type="VARCHAR(255)"/>
+            <column name="passport_number" type="VARCHAR(255)"/>
+            <column name="passport_series" type="VARCHAR(255)"/>
+            <column name="registration_address" type="VARCHAR(255)"/>
+            <column name="residential_address" type="VARCHAR(255)"/>
+            <column name="updated_at" type="DATETIME"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1750793195676-11" author="admin">
+        <addNotNullConstraint columnName="department_code" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-20" author="admin">
+        <addUniqueConstraint columnNames="email" constraintName="uc_client_email" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-21" author="admin">
+        <addUniqueConstraint columnNames="passport_number" constraintName="uc_client_passport_number"
+                             tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-22" author="admin">
+        <addUniqueConstraint columnNames="phone" constraintName="uc_client_phone" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-23" author="admin">
+        <addUniqueConstraint columnNames="tax_code" constraintName="uc_client_tax_code" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-1" author="admin">
+        <dropNotNullConstraint columnDataType="varchar(255)" columnName="address" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-2" author="admin">
+        <addAutoIncrement columnDataType="bigint" columnName="id" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-3" author="admin">
+        <dropNotNullConstraint columnDataType="bigint" columnName="manager_id" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-4" author="admin">
+        <modifyDataType columnName="phone" newDataType="VARCHAR(255)" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-5" author="admin">
+        <modifyDataType columnName="status" newDataType="VARCHAR(255)" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-6" author="admin">
+        <modifyDataType columnName="tax_code" newDataType="VARCHAR(255)" tableName="client"/>
+    </changeSet>
+    <changeSet id="1750793195676-7" author="admin">
+        <dropNotNullConstraint columnDataType="varchar(255)" columnName="tax_code" tableName="client"/>
+    </changeSet>
+
+</databaseChangeLog>

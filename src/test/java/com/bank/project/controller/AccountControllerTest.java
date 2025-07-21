@@ -1,24 +1,26 @@
 package com.bank.project.controller;
 
 import com.bank.project.entity.Account;
+import com.bank.project.entity.AccountStatus;
 import com.bank.project.entity.Currency;
 import com.bank.project.service.AccountService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.context.WebApplicationContext;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 public class AccountControllerTest {
 
@@ -43,7 +45,7 @@ public class AccountControllerTest {
         account.setClientId(1L);
         account.setBalance(BigDecimal.valueOf(1000));
         account.setCurrencyCode(Integer.valueOf("USD"));
-        account.setStatus("ACTIVE");
+        account.setStatus(AccountStatus.valueOf("ACTIVE"));
 
         when(accountService.createAccount(Mockito.any(Account.class))).thenReturn(account);
 
@@ -66,7 +68,7 @@ public class AccountControllerTest {
         account.setClientId(1L);
         account.setBalance(BigDecimal.valueOf(1000));
         account.setCurrencyCode(Currency.CurrencyCode.USD.ordinal());
-        account.setStatus("ACTIVE");
+        account.setStatus(AccountStatus.valueOf("ACTIVE"));
 
         when(accountService.getAccountById(1L)).thenReturn(Optional.of(account));
 
@@ -97,14 +99,14 @@ public class AccountControllerTest {
         account1.setClientId(1L);
         account1.setBalance(BigDecimal.valueOf(1000));
         account1.setCurrencyCode(Integer.valueOf("USD"));
-        account1.setStatus("ACTIVE");
+        account1.setStatus(AccountStatus.valueOf("ACTIVE"));
 
         Account account2 = new Account();
         account2.setId(2L);
         account2.setClientId(2L);
         account2.setBalance(BigDecimal.valueOf(500));
         account2.setCurrencyCode(Integer.valueOf("EUR"));
-        account2.setStatus("ACTIVE");
+        account2.setStatus(AccountStatus.valueOf("ACTIVE"));
 
         when(accountService.getAllAccounts()).thenReturn(Arrays.asList(account1, account2));
 
@@ -123,7 +125,7 @@ public class AccountControllerTest {
         account.setClientId(1L);
         account.setBalance(BigDecimal.valueOf(1000));
         account.setCurrencyCode(Integer.valueOf("USD"));
-        account.setStatus("ACTIVE");
+        account.setStatus(AccountStatus.valueOf("ACTIVE"));
 
         when(accountService.updateAccount(eq(1L), Mockito.any(Account.class))).thenReturn(account);
 

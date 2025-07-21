@@ -1,11 +1,13 @@
 package com.bank.project.repository;
 
 import com.bank.project.entity.Product;
+import com.bank.project.entity.enums.ProductStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -24,17 +26,17 @@ class ProductRepositoryTest {
         // Создаем примеры продуктов для тестирования
         product1 = new Product();
         product1.setName("Product1");
-        product1.setStatus("active");
+        product1.setStatus(ProductStatus.valueOf("active"));
         product1.setCurrencyCode("USD");
-        product1.setInterestRate(5.0);
-        product1.setCreditLimit(1000.0);
+        product1.setInterestRate(BigDecimal.valueOf(5.0));
+        product1.setCreditLimit(BigDecimal.valueOf(1000.0));
 
         Product product2 = new Product();
         product2.setName("Product2");
-        product2.setStatus("inactive");
+        product2.setStatus(ProductStatus.valueOf("inactive"));
         product2.setCurrencyCode("EUR");
-        product2.setInterestRate(3.0);
-        product2.setCreditLimit(500.0);
+        product2.setInterestRate(BigDecimal.valueOf(3.0));
+        product2.setCreditLimit(BigDecimal.valueOf(500.0));
 
         // Сохраняем данные в базу для тестирования
         productRepository.save(product1);
@@ -60,7 +62,7 @@ class ProductRepositoryTest {
     @Test
     void testFindByStatus() {
         // Проверка метода поиска продуктов по статусу
-        List<Product> activeProducts = productRepository.findByStatus("active");
+        List<Product> activeProducts = productRepository.findByStatus(ProductStatus.ACTIVE);
         assertThat(activeProducts).hasSize(1);
         assertThat(activeProducts.get(0).getStatus()).isEqualTo("active");
     }
@@ -76,7 +78,7 @@ class ProductRepositoryTest {
     @Test
     void testFindByInterestRate() {
         // Проверка метода поиска продуктов по процентной ставке
-        List<Product> productsWithInterestRate = productRepository.findByInterestRate(5.0);
+        List<Product> productsWithInterestRate = productRepository.findByInterestRate(BigDecimal.valueOf(5.0));
         assertThat(productsWithInterestRate).hasSize(1);
         assertThat(productsWithInterestRate.get(0).getInterestRate()).isEqualTo(5.0);
     }
@@ -84,7 +86,7 @@ class ProductRepositoryTest {
     @Test
     void testFindByCreditLimit() {
         // Проверка метода поиска продуктов по кредитному лимиту
-        List<Product> productsWithCreditLimit = productRepository.findByCreditLimit(1000.0);
+        List<Product> productsWithCreditLimit = productRepository.findByCreditLimit(BigDecimal.valueOf(1000.0));
         assertThat(productsWithCreditLimit).hasSize(1);
         assertThat(productsWithCreditLimit.get(0).getCreditLimit()).isEqualTo(1000.0);
     }
@@ -92,18 +94,18 @@ class ProductRepositoryTest {
     @Test
     void testFindByStatusAndCurrencyCode() {
         // Проверка метода поиска продуктов по статусу и коду валюты
-        List<Product> activeUsdProducts = productRepository.findByStatusAndCurrencyCode("active", "USD");
+        List<Product> activeUsdProducts = productRepository.findByStatusAndCurrencyCode(ProductStatus.ACTIVE, "USD");
         assertThat(activeUsdProducts).hasSize(1);
-        assertThat(activeUsdProducts.get(0).getStatus()).isEqualTo("active");
+        assertThat(activeUsdProducts.get(0).getStatus()).isEqualTo(ProductStatus.ACTIVE);
         assertThat(activeUsdProducts.get(0).getCurrencyCode()).isEqualTo("USD");
     }
 
     @Test
     void testFindByStatusAndInterestRate() {
         // Проверка метода поиска продуктов по статусу и процентной ставке
-        List<Product> activeInterestRateProducts = productRepository.findByStatusAndInterestRate("active", 5.0);
+        List<Product> activeInterestRateProducts = productRepository.findByStatusAndInterestRate(ProductStatus.ACTIVE, BigDecimal.valueOf(5.0));
         assertThat(activeInterestRateProducts).hasSize(1);
-        assertThat(activeInterestRateProducts.get(0).getStatus()).isEqualTo("active");
+        assertThat(activeInterestRateProducts.get(0).getStatus()).isEqualTo(ProductStatus.ACTIVE);
         assertThat(activeInterestRateProducts.get(0).getInterestRate()).isEqualTo(5.0);
     }
 }

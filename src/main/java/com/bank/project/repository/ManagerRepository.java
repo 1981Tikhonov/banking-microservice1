@@ -1,6 +1,7 @@
 package com.bank.project.repository;
 
 import com.bank.project.entity.Manager;
+import com.bank.project.entity.enums.ManagerStatus;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -19,7 +20,7 @@ public interface ManagerRepository extends JpaRepository<Manager, Long> {
 
     Optional<Manager> findByLastName(String lastName); // Поиск по фамилии
 
-    List<Manager> findByStatus(String status); // Поиск по статусу
+    List<Manager> findByStatus(ManagerStatus status); // Поиск по статусу
 
     List<Manager> findByRole(String role); // Поиск по роли
 

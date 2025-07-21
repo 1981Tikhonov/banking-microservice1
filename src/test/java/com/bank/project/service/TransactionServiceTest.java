@@ -4,13 +4,17 @@ import com.bank.project.entity.Transaction;
 import com.bank.project.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 class TransactionServiceTest {
 
@@ -32,7 +36,7 @@ class TransactionServiceTest {
         transaction.setDebitAccountId(101L);
         transaction.setCreditAccountId(102L);
         transaction.setType("Transfer");
-        transaction.setAmount(1000.0);
+        transaction.setAmount(BigDecimal.valueOf(1000.0));
         transaction.setCreatedAt(LocalDateTime.now());
     }
 
@@ -50,7 +54,7 @@ class TransactionServiceTest {
 
     @Test
     void testCreateTransaction_InvalidAmount() {
-        transaction.setAmount(-1000.0);
+        transaction.setAmount(BigDecimal.valueOf(-1000.0));
 
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> transactionService.createTransaction(transaction));
 

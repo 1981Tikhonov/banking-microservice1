@@ -1,0 +1,8 @@
+{
+  "properties": [
+    {
+      "name": "springdoc.model-converter.deprecating-converter.enabled",
+      "type": "java.lang.String",
+      "description": "Description for springdoc.model-converter.deprecating-converter.enabled."
+  }
+] }

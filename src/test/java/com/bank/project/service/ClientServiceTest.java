@@ -2,11 +2,12 @@ package com.bank.project.service;
 
 import com.bank.project.entity.Client;
 import com.bank.project.repository.ClientRepository;
+import com.bank.project.dto.CreateClientRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.junit.jupiter.api.extension.ExtendWith;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -15,7 +16,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
+@ExtendWith(MockitoExtension.class)
 class ClientServiceTest {
 
     @Mock
@@ -49,11 +50,12 @@ class ClientServiceTest {
     void testGetClientById() {
         when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
 
-        Client foundClient = clientService.getClientById(1L);
+        Optional<Client> foundClient = clientService.getClientById(1L);
 
-        assertNotNull(foundClient);
-        assertEquals(client.getId(), foundClient.getId());
-        assertEquals(client.getFirstName(), foundClient.getFirstName());
+        assertTrue(foundClient.isPresent(), "Client should be present");
+        Client actualClient = foundClient.get();
+        assertEquals(client.getId(), actualClient.getId());
+        assertEquals(client.getFirstName(), actualClient.getFirstName());
     }
 
     @Test
@@ -78,19 +80,39 @@ class ClientServiceTest {
 
     @Test
     void testUpdateClient() {
-        Client updatedClientData = new Client();
-        updatedClientData.setFirstName("Jane");
-        updatedClientData.setLastName("Doe");
-        updatedClientData.setEmail("jane.doe@example.com");
+        // Create DTO with updated data
+        CreateClientRequest updateRequest = new CreateClientRequest();
+        try {
+            java.lang.reflect.Field firstNameField = CreateClientRequest.class.getDeclaredField("firstName");
+            java.lang.reflect.Field lastNameField = CreateClientRequest.class.getDeclaredField("lastName");
+            java.lang.reflect.Field emailField = CreateClientRequest.class.getDeclaredField("email");
+            
+            firstNameField.setAccessible(true);
+            lastNameField.setAccessible(true);
+            emailField.setAccessible(true);
+            
+            firstNameField.set(updateRequest, "Jane");
+            lastNameField.set(updateRequest, "Doe");
+            emailField.set(updateRequest, "jane.doe@example.com");
+            
+            // Create expected updated client
+            Client updatedClientEntity = new Client();
+            updatedClientEntity.setId(1L);
+            updatedClientEntity.setFirstName("Jane");
+            updatedClientEntity.setLastName("Doe");
+            updatedClientEntity.setEmail("jane.doe@example.com");
 
-        when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
-        when(clientRepository.save(any(Client.class))).thenReturn(updatedClientData);
+            when(clientRepository.findById(1L)).thenReturn(Optional.of(client));
+            when(clientRepository.save(any(Client.class))).thenReturn(updatedClientEntity);
 
-        Client updatedClient = clientService.updateClient(1L, updatedClientData);
+            Client updatedClient = clientService.updateClient(1L, updateRequest);
 
-        assertEquals("Jane", updatedClient.getFirstName());
-        assertEquals("Doe", updatedClient.getLastName());
-        verify(clientRepository, times(1)).save(client);
+            assertEquals("Jane", updatedClient.getFirstName());
+            assertEquals("Doe", updatedClient.getLastName());
+            verify(clientRepository, times(1)).save(any(Client.class));
+        } catch (Exception e) {
+            fail("Failed to update client: " + e.getMessage());
+        }
     }
 
     @Test

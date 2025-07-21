@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Setter
@@ -44,5 +45,17 @@ public class Transaction {
     @PrePersist
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
+    }
+
+    public void setSourceAccount(Account sourceAccount) {
+        this.debitAccountId = sourceAccount.getId();
+    }
+
+    public void setTargetAccount(Account targetAccount) {
+        this.creditAccountId = targetAccount.getId();
+    }
+
+    public void setAmount(BigDecimal bigDecimal) {
+        this.amount = bigDecimal.doubleValue();
     }
 }

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -27,14 +28,14 @@ class TransactionRepositoryTest {
         transaction1.setDebitAccountId(1L);
         transaction1.setCreditAccountId(2L);
         transaction1.setType("transfer");
-        transaction1.setAmount(100.0);
+        transaction1.setAmount(BigDecimal.valueOf(100.0));
         transaction1.setCreatedAt(LocalDateTime.now().minusDays(1));
 
         Transaction transaction2 = new Transaction();
         transaction2.setDebitAccountId(2L);
         transaction2.setCreditAccountId(3L);
         transaction2.setType("deposit");
-        transaction2.setAmount(200.0);
+        transaction2.setAmount(BigDecimal.valueOf(200.0));
         transaction2.setCreatedAt(LocalDateTime.now());
 
         // Сохраняем данные в базу для тестирования

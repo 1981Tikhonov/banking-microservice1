@@ -1,6 +1,7 @@
 package com.bank.project.service;
 
 import com.bank.project.entity.Manager;
+import com.bank.project.entity.enums.ManagerStatus;
 import com.bank.project.repository.ManagerRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +41,7 @@ class ManagerServiceTest {
         manager.setPassword("encoded_password");
         manager.setFirstName("John");
         manager.setLastName("Doe");
-        manager.setStatus("ACTIVE");
+        manager.setStatus(ManagerStatus.valueOf("ACTIVE"));
         manager.setRole("ADMIN");
         manager.setCreatedAt(LocalDateTime.now());
     }
@@ -91,7 +92,7 @@ class ManagerServiceTest {
         Manager updatedManagerData = new Manager();
         updatedManagerData.setFirstName("Updated");
         updatedManagerData.setLastName("Name");
-        updatedManagerData.setStatus("INACTIVE");
+        updatedManagerData.setStatus(ManagerStatus.valueOf("INACTIVE"));
         updatedManagerData.setRole("USER");
 
         when(managerRepository.findById(1L)).thenReturn(Optional.of(manager));
@@ -101,7 +102,7 @@ class ManagerServiceTest {
 
         assertEquals("Updated", updatedManager.getFirstName());
         assertEquals("Name", updatedManager.getLastName());
-        assertEquals("INACTIVE", updatedManager.getStatus());
+        assertEquals(ManagerStatus.INACTIVE, updatedManager.getStatus());
         assertEquals("USER", updatedManager.getRole());
     }
 
@@ -134,13 +135,13 @@ class ManagerServiceTest {
 
     @Test
     void testFindManagersByStatus() {
-        when(managerRepository.findByStatus("ACTIVE")).thenReturn(List.of(manager));
+        when(managerRepository.findByStatus(ManagerStatus.valueOf("ACTIVE"))).thenReturn(List.of(manager));
 
         List<Manager> managers = managerService.findManagersByStatus("ACTIVE");
 
         assertNotNull(managers);
         assertFalse(managers.isEmpty());
-        assertEquals("ACTIVE", managers.get(0).getStatus());
+        assertEquals(ManagerStatus.ACTIVE, managers.get(0).getStatus());
     }
 
     @Test

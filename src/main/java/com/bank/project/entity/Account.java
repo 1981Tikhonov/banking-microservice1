@@ -17,6 +17,9 @@ public class Account {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "account_number", unique = true, nullable = false)
+    private String accountNumber;
+
     @ManyToOne
     @JoinColumn(name = "client_id", nullable = false)  // Обязательно указывать клиента
     private Client client;
@@ -24,9 +27,9 @@ public class Account {
     private String name;
     private String type;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private String status;
-
+    private AccountStatus status;
 
     @Column(precision = 15, scale = 2)  // Уточнение для BigDecimal (деньги с двумя знаками после запятой)
     private BigDecimal balance;
@@ -60,6 +63,8 @@ public class Account {
     }
 
     public void setClientId(long l) {
-
+        // Implementation not needed as we're using JPA relationships
     }
+
+    
 }

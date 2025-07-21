@@ -1,6 +1,7 @@
 package com.bank.project.service;
 
 import com.bank.project.entity.Account;
+import com.bank.project.entity.AccountStatus;
 import com.bank.project.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ public class AccountServiceTest {
         account.setClientId(1L);
         account.setBalance(BigDecimal.valueOf(1000));
         account.setCurrencyCode(Integer.valueOf("USD"));
-        account.setStatus("ACTIVE");
+        account.setStatus(AccountStatus.valueOf("ACTIVE"));
         account.setCreatedAt(LocalDateTime.now());
         account.setUpdatedAt(LocalDateTime.now());
     }
@@ -118,12 +119,12 @@ public class AccountServiceTest {
 
     @Test
     void testGetAccountsByStatus() {
-        when(accountRepository.findAllByStatus(anyString())).thenReturn(List.of(account));
+        when(accountRepository.findAllByStatus(any(AccountStatus.class))).thenReturn(List.of(account));
 
-        List<Account> accounts = accountService.getAccountsByStatus("ACTIVE");
+        List<Account> accounts = accountService.getAccountsByStatus(String.valueOf(AccountStatus.ACTIVE));
 
         assertNotNull(accounts);
         assertFalse(accounts.isEmpty());
-        verify(accountRepository, times(1)).findAllByStatus(anyString());
+        verify(accountRepository, times(1)).findAllByStatus(AccountStatus.valueOf(anyString()));
     }
 }

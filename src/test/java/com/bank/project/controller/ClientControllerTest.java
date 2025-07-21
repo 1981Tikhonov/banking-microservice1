@@ -1,7 +1,12 @@
 package com.bank.project.controller;
 
+import com.bank.project.dto.ClientResponse;
+import com.bank.project.dto.CreateClientRequest;
 import com.bank.project.entity.Client;
+import com.bank.project.exception.GlobalExceptionHandler;
+import com.bank.project.exception.ResourceNotFoundException;
 import com.bank.project.service.ClientService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,149 +17,179 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-
-import java.util.Arrays;
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
-public class ClientControllerTest {
+class ClientControllerTest {
 
     private MockMvc mockMvc;
-
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
     @Mock
     private ClientService clientService;
 
     @InjectMocks
     private ClientController clientController;
 
+    private Client testClient;
+    private CreateClientRequest createRequest;
+    private ClientResponse clientResponse;
+
     @BeforeEach
-    public void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(clientController).build();
+    void setUp() {
+        mockMvc = MockMvcBuilders.standaloneSetup(clientController)
+                .setControllerAdvice(new GlobalExceptionHandler())
+                .build();
+
+        testClient = new Client();
+        testClient.setId(1L);
+        testClient.setFirstName("John");
+        testClient.setLastName("Doe");
+        testClient.setEmail("john.doe@example.com");
+        testClient.setStatus("ACTIVE");
+        testClient.setCreatedAt(LocalDateTime.now());
+        testClient.setUpdatedAt(LocalDateTime.now());
+
+        createRequest = new CreateClientRequest();
+        createRequest.setFirstName("John");
+        createRequest.setLastName("Doe");
+        createRequest.setEmail("john.doe@example.com");
+        createRequest.setPhone("+1234567890");
+        createRequest.setTaxCode("1234567890");
+        createRequest.setAddress("123 Main St");
+
+        clientResponse = ClientResponse.fromEntity(testClient);
     }
 
     @Test
-    public void testCreateClient() throws Exception {
-        Client client = new Client();
-        client.setFirstName("John");
-        client.setLastName("Doe");
-        client.setId(1L);
+    void createClient_ValidRequest_ShouldReturnCreatedClient() throws Exception {
+        when(clientService.createClient(any(CreateClientRequest.class))).thenReturn(testClient);
 
-        // Мокируем сервис
-        when(clientService.createClient(any(Client.class))).thenReturn(client);
-
-        // Выполняем POST-запрос и проверяем ответ
         mockMvc.perform(post("/api/clients")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\": \"John\", \"lastName\": \"Doe\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstName", is("John")))
+                .andExpect(jsonPath("$.lastName", is("Doe")))
+                .andExpect(jsonPath("$.email", is("john.doe@example.com")))
+                .andExpect(jsonPath("$.status", is("ACTIVE")));
 
-        // Проверяем, что метод createClient был вызван
-        verify(clientService, times(1)).createClient(any(Client.class));
+        verify(clientService).createClient(any(CreateClientRequest.class));
     }
 
     @Test
-    public void testGetClientById() throws Exception {
-        Client client = new Client();
-        client.setFirstName("John");
-        client.setLastName("Doe");
-        client.setId(1L);
+    void getClientById_WhenClientExists_ShouldReturnClient() throws Exception {
+        when(clientService.getClientById(1L)).thenReturn(Optional.of(testClient));
 
-        // Мокируем сервис
-        when(clientService.getClientById(1L)).thenReturn(client);
-
-        // Выполняем GET-запрос и проверяем ответ
         mockMvc.perform(get("/api/clients/{id}", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstName", is("John")))
+                .andExpect(jsonPath("$.lastName", is("Doe")));
 
-        // Проверяем, что метод getClientById был вызван
-        verify(clientService, times(1)).getClientById(1L);
+        verify(clientService).getClientById(1L);
     }
 
     @Test
-    public void testGetAllClients() throws Exception {
-        Client client1 = new Client();
-        client1.setFirstName("John");
-        client1.setLastName("Doe");
-        Client client2 = new Client();
-        client2.setFirstName("Jane");
-        client2.setLastName("Smith");
+    void getClientById_WhenClientNotExists_ShouldReturnNotFound() throws Exception {
+        when(clientService.getClientById(999L)).thenReturn(Optional.empty());
 
-        List<Client> clients = Arrays.asList(client1, client2);
+        mockMvc.perform(get("/api/clients/{id}", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Client")));
 
-        // Мокируем сервис
-        when(clientService.getAllClients()).thenReturn(clients);
+        verify(clientService).getClientById(999L);
+    }
 
-        // Выполняем GET-запрос и проверяем ответ
-        mockMvc.perform(get("/api/clients"))
+    @Test
+    void getAllClients_ShouldReturnPaginatedResults() throws Exception {
+        when(clientService.getAllClients(0, 10, new String[]{"id,asc"}))
+                .thenReturn(List.of(testClient));
+
+        mockMvc.perform(get("/api/clients")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "id,asc"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].firstName").value("John"))
-                .andExpect(jsonPath("$[1].firstName").value("Jane"));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].firstName", is("John")));
 
-        // Проверяем, что метод getAllClients был вызван
-        verify(clientService, times(1)).getAllClients();
+        verify(clientService).getAllClients(0, 10, new String[]{"id,asc"});
     }
 
     @Test
-    public void testGetClientsByStatus() throws Exception {
-        Client client = new Client();
-        client.setFirstName("John");
-        client.setLastName("Doe");
-        client.setStatus("active");
+    void getClientsByStatus_ShouldReturnFilteredResults() throws Exception {
+        when(clientService.getClientsByStatus("ACTIVE"))
+                .thenReturn(List.of(testClient));
 
-        List<Client> clients = List.of(client);
-
-        // Мокируем сервис
-        when(clientService.getClientsByStatus("active")).thenReturn(clients);
-
-        // Выполняем GET-запрос и проверяем ответ
-        mockMvc.perform(get("/api/clients/status/{status}", "active"))
+        mockMvc.perform(get("/api/clients/status/{status}", "ACTIVE")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "id,asc"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].status").value("active"));
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].status", is("ACTIVE")));
 
-        // Проверяем, что метод getClientsByStatus был вызван
-        verify(clientService, times(1)).getClientsByStatus("active");
+        verify(clientService).getClientsByStatus("ACTIVE");
     }
 
     @Test
-    public void testUpdateClient() throws Exception {
-        Client client = new Client();
-        client.setFirstName("John");
-        client.setLastName("Doe");
-        client.setId(1L);
+    void updateClient_WhenClientExists_ShouldReturnUpdatedClient() throws Exception {
+        when(clientService.updateClient(eq(1L), any())).thenReturn(testClient);
 
-        // Мокируем сервис
-        when(clientService.updateClient(eq(1L), any(Client.class))).thenReturn(client);
-
-        // Выполняем PUT-запрос и проверяем ответ
         mockMvc.perform(put("/api/clients/{id}", 1L)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"firstName\": \"John\", \"lastName\": \"Doe\"}"))
+                        .content(objectMapper.writeValueAsString(createRequest)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("John"))
-                .andExpect(jsonPath("$.lastName").value("Doe"));
+                .andExpect(jsonPath("$.id", is(1)))
+                .andExpect(jsonPath("$.firstName", is("John")));
 
-        // Проверяем, что метод updateClient был вызван
-        verify(clientService, times(1)).updateClient(eq(1L), any(Client.class));
+        verify(clientService).updateClient(eq(1L), any());
     }
 
     @Test
-    public void testDeleteClient() throws Exception {
-        // Мокируем сервис
-        when(clientService.deleteClient(1L)).thenReturn(true);
+    void updateClient_WhenClientNotExists_ShouldReturnNotFound() throws Exception {
+        when(clientService.updateClient(eq(999L), any()))
+                .thenThrow(new ResourceNotFoundException("Client", "id", 999L));
 
-        // Выполняем DELETE-запрос и проверяем ответ
+        mockMvc.perform(put("/api/clients/{id}", 999L)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createRequest)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Client")));
+
+        verify(clientService).updateClient(eq(999L), any());
+    }
+
+    @Test
+    void deleteClient_WhenClientExists_ShouldReturnNoContent() throws Exception {
+        doNothing().when(clientService).deleteClient(1L);
+
         mockMvc.perform(delete("/api/clients/{id}", 1L))
                 .andExpect(status().isNoContent());
 
-        // Проверяем, что метод deleteClient был вызван
-        verify(clientService, times(1)).deleteClient(1L);
+        verify(clientService).deleteClient(1L);
+    }
+
+    @Test
+    void deleteClient_WhenClientNotExists_ShouldReturnNotFound() throws Exception {
+        doThrow(new ResourceNotFoundException("Client", "id", 999L))
+                .when(clientService).deleteClient(999L);
+
+        mockMvc.perform(delete("/api/clients/{id}", 999L))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message", containsString("Client")));
+
+        verify(clientService).deleteClient(999L);
     }
 }

@@ -1,11 +1,11 @@
 package com.bank.project.repository;
 
 import com.bank.project.entity.Account;
+import com.bank.project.entity.AccountStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -27,7 +27,7 @@ public class AccountRepositoryTest {
         account.setClientId(11L);  // Используем существующий client_id, например, 11
         account.setName("Test Account");
         account.setType("Savings");
-        account.setStatus("Active");
+        account.setStatus(AccountStatus.valueOf("Active"));
         account.setBalance(BigDecimal.valueOf(1000.00));
         account.setCurrencyCode(Integer.valueOf("USD"));
     }

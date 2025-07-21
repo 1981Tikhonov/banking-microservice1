@@ -1,6 +1,7 @@
 package com.bank.project.service;
 
 import com.bank.project.entity.Account;
+import com.bank.project.entity.AccountStatus;
 import com.bank.project.repository.AccountRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class AccountService {
+public class AccountService implements AccountServiceInterface {
 
     private static final Logger logger = LoggerFactory.getLogger(AccountService.class);
 
@@ -48,6 +49,32 @@ public class AccountService {
         logger.info("Total accounts fetched: {}", accounts.size());
         return accounts;
     }
+    
+    /**
+     * Test method to demonstrate AOP functionality
+     */
+    public void performTestOperation() {
+        logger.info("Performing test operation...");
+        
+        // Имитация работы с задержкой
+        try {
+            Thread.sleep(300); // Задержка для демонстрации
+            logger.debug("Test operation in progress...");
+            Thread.sleep(300);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("Test operation was interrupted", e);
+        }
+        
+        // Имитация вызова репозитория
+        long count = accountRepository.count();
+        logger.debug("Current number of accounts in DB: {}", count);
+        
+        // Имитация ошибки для демонстрации обработки исключений
+        if (count > 0) {
+            throw new RuntimeException("Test exception to demonstrate error logging");
+        }
+    }
 
     public List<Account> getAccountsByClientId(Long clientId) {
         logger.info("Fetching accounts for client ID: {}", clientId);
@@ -56,7 +83,7 @@ public class AccountService {
 
     public List<Account> getAccountsByStatus(String status) {
         logger.info("Fetching accounts with status: {}", status);
-        return accountRepository.findAllByStatus(status);
+        return accountRepository.findAllByStatus(AccountStatus.valueOf(status));
     }
 
     public List<Account> getAccountsByBalanceLessThan(BigDecimal balance) {
@@ -66,7 +93,13 @@ public class AccountService {
 
     public List<Account> getAccountsByCurrencyCode(String currencyCode) {
         logger.info("Fetching accounts with currency code: {}", currencyCode);
-        return accountRepository.findAllByCurrencyCode(currencyCode);
+        try {
+            int code = Integer.parseInt(currencyCode);
+            return accountRepository.findAllByCurrencyCode(code);
+        } catch (NumberFormatException e) {
+            logger.error("Invalid currency code format: {}", currencyCode);
+            return List.of(); // Return empty list for invalid currency code
+        }
     }
 
     public List<Account> getAccountsByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate) {

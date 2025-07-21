@@ -1,60 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- Define a default logging level for the application -->
-    <property name="LOG_LEVEL" value="INFO" />
+    <!-- Define properties -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n" />
+    <property name="LOG_DIR" value="logs" />
+    <property name="MAX_FILE_SIZE" value="10MB" />
+    <property name="MAX_HISTORY" value="7" />
+    <property name="TOTAL_SIZE_CAP" value="100MB" />
 
-    <!-- Define where log files will be stored -->
-    <property name="LOG_FILE" value="logs/application.log" />
-
-    <!-- Define the format of the log messages -->
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n" />
-
-    <!-- Console Appender: Outputs logs to the console -->
+    <!-- Console Appender -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <!-- Apply the specified logging pattern -->
             <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!-- File Appender: Writes logs to a rolling file -->
+    <!-- File Appender with Rolling Policy -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- Main log file -->
-        <file>${LOG_FILE}</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- Creates a new log file each day -->
-            <fileNamePattern>logs/application-%d{yyyy-MM-dd}.log</fileNamePattern>
-            <!-- Retain logs for the last 30 days -->
-            <maxHistory>30</maxHistory>
-        </rollingPolicy>
+        <file>${LOG_DIR}/application.log</file>
         <encoder>
-            <!-- Apply the specified logging pattern -->
             <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/application-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+            <cleanHistoryOnStart>true</cleanHistoryOnStart>
+        </rollingPolicy>
     </appender>
 
-    <!-- Configure logging for Hibernate SQL execution -->
-    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-        <!-- Logs are only output to the console -->
-        <appender-ref ref="CONSOLE" />
-    </logger>
+    <!-- Separate error log file -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_DIR}/error.log</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_DIR}/error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>${MAX_FILE_SIZE}</maxFileSize>
+            <maxHistory>${MAX_HISTORY}</maxHistory>
+            <totalSizeCap>${TOTAL_SIZE_CAP}</totalSizeCap>
+        </rollingPolicy>
+    </appender>
 
-    <!-- Configure logging for Hibernate SQL type descriptors -->
-    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" additivity="false">
-        <!-- Logs are only output to the console -->
-        <appender-ref ref="CONSOLE" />
-    </logger>
-
-    <!-- Configure logging for your application's package -->
+    <!-- Logger Configurations -->
     <logger name="com.bank.project" level="DEBUG" additivity="false">
-        <!-- Logs are output to both console and file -->
+        <appender-ref ref="FILE" />
         <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <!-- Hibernate Logging -->
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+
+    <logger name="org.hibernate.type.descriptor.sql" level="TRACE" additivity="false">
         <appender-ref ref="FILE" />
     </logger>
 
-    <!-- Root Logger: Configures the default logging level for all logs -->
-    <root level="${LOG_LEVEL}">
-        <!-- Logs are output to both console and file -->
-        <appender-ref ref="CONSOLE" />
+    <!-- Spring Security Logging -->
+    <logger name="org.springframework.security" level="INFO" additivity="false">
         <appender-ref ref="FILE" />
+        <appender-ref ref="ERROR_FILE" />
+    </logger>
+
+    <!-- Async Logging Configuration -->
+    <appender name="ASYNC_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="FILE" />
+        <queueSize>1000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>true</includeCallerData>
+    </appender>
+
+    <appender name="ASYNC_ERROR_FILE" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="ERROR_FILE" />
+        <queueSize>1000</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+    </appender>
+
+    <!-- Root Logger -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="ASYNC_FILE" />
+        <appender-ref ref="ASYNC_ERROR_FILE" />
     </root>
 </configuration>

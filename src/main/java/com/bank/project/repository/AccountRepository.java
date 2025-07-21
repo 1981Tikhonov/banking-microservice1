@@ -1,6 +1,7 @@
 package com.bank.project.repository;
 
 import com.bank.project.entity.Account;
+import com.bank.project.entity.AccountStatus;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -15,17 +16,19 @@ public interface AccountRepository extends JpaRepository<Account, Long> {
 
     Optional<Account> findByName(String name);
 
-    List<Account> findAllByStatus(String status);
+    List<Account> findAllByStatus(AccountStatus status);
 
     List<Account> findAllByBalanceLessThan(BigDecimal balance);
 
-    List<Account> findAllByCurrencyCode(String currencyCode);
+    List<Account> findAllByCurrencyCode(Integer currencyCode);
 
     List<Account> findAllByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
 
     List<Account> findAllByUpdatedAtAfter(LocalDateTime updatedAt);
 
+    List<Account> findAllByClientId(Long clientId);
+
     boolean existsById(@NotNull Long id);
 
-    List<Account> findAllByClientId(Long clientId);
+
 }

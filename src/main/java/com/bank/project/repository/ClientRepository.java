@@ -1,41 +1,45 @@
 package com.bank.project.repository;
 
 import com.bank.project.entity.Client;
+import com.bank.project.entity.enums.ClientStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
-public interface ClientRepository extends JpaRepository<Client, Long> {
+public interface ClientRepository extends JpaRepository<Client, Long>, JpaSpecificationExecutor<Client> {
+    
+    boolean existsByEmail(String email);
+    
+    Optional<Client> findByEmail(String email);
+    
+    @Query("SELECT c FROM Client c WHERE c.status = :status")
+    Page<Client> findByStatus(@Param("status") ClientStatus status, Pageable pageable);
 
-    // Найти всех клиентов по статусу
-    List<Client> findByStatus(String status);
+    @Query("SELECT c FROM Client c WHERE c.taxCode = :taxCode")
+    List<Client> findByTaxCode(@Param("taxCode") String taxCode);
 
-    // Найти всех клиентов по менеджеру
-    List<Client> findByManagerId(Long managerId);
+    @Query("SELECT c FROM Client c WHERE LOWER(c.address) LIKE LOWER(concat('%', :address,'%'))")
+    Page<Client> findByAddressContainingIgnoreCase(@Param("address") String address, Pageable pageable);
 
-    // Найти всех клиентов по налоговому коду
-    List<Client> findByTaxCode(String taxCode);
+    @Query("SELECT c FROM Client c WHERE c.createdAt BETWEEN :startDate AND :endDate")
+    List<Client> findByCreatedAtBetween(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 
-    // Найти всех клиентов по имени
-    List<Client> findByFirstName(String firstName);
+    Object findByStatus(String status);
 
-    // Найти всех клиентов по фамилии
-    List<Client> findByLastName(String lastName);
+    boolean existsByTaxCode(String number);
 
-    // Найти всех клиентов по email
-    List<Client> findByEmail(String email);
+    Object findByAddressContainingIgnoreCase(String mainAddress);
 
-    // Найти всех клиентов по телефону
-    List<Client> findByPhone(String phone);
-
-    // Найти всех клиентов по адресу
-    List<Client> findByAddress(String address);
-
-    // Найти всех клиентов по диапазону дат создания
-    List<Client> findByCreatedAtBetween(java.time.LocalDateTime startDate, java.time.LocalDateTime endDate);
-
-    // Найти всех клиентов по дате обновления
-    List<Client> findByUpdatedAtAfter(java.time.LocalDateTime updatedAt);
+    int updateClientStatus(Long id, String suspended);
 }

@@ -1,6 +1,7 @@
 package com.bank.project.repository;
 
 import com.bank.project.entity.Manager;
+import com.bank.project.entity.enums.ManagerStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,14 +27,14 @@ class ManagerRepositoryTest {
         manager1.setUsername("manager1");
         manager1.setFirstName("John");
         manager1.setLastName("Doe");
-        manager1.setStatus("active");
+        manager1.setStatus(ManagerStatus.valueOf("active"));
         manager1.setRole("admin");
 
         Manager manager2 = new Manager();
         manager2.setUsername("manager2");
         manager2.setFirstName("Jane");
         manager2.setLastName("Smith");
-        manager2.setStatus("inactive");
+        manager2.setStatus(ManagerStatus.valueOf("inactive"));
         manager2.setRole("user");
 
         // Сохраняем данные в базу для тестирования
@@ -76,9 +77,9 @@ class ManagerRepositoryTest {
     @Test
     void testFindByStatus() {
         // Проверка метода поиска менеджеров по статусу
-        List<Manager> activeManagers = managerRepository.findByStatus("active");
+        List<Manager> activeManagers = managerRepository.findByStatus(ManagerStatus.ACTIVE);
         assertThat(activeManagers).hasSize(1);
-        assertThat(activeManagers.get(0).getStatus()).isEqualTo("active");
+        assertThat(activeManagers.get(0).getStatus()).isEqualTo(ManagerStatus.ACTIVE);
     }
 
     @Test

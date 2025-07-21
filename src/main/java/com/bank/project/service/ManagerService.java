@@ -1,6 +1,7 @@
 package com.bank.project.service;
 
 import com.bank.project.entity.Manager;
+import com.bank.project.entity.enums.ManagerStatus;
 import com.bank.project.repository.ManagerRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -96,7 +97,13 @@ public class ManagerService implements UserDetailsService {
 
     public List<Manager> findManagersByStatus(String status) {
         logger.info("Finding managers with status: {}", status);
-        return managerRepository.findByStatus(status);
+        try {
+            ManagerStatus managerStatus = ManagerStatus.valueOf(status);
+            return managerRepository.findByStatus(managerStatus);
+        } catch (IllegalArgumentException e) {
+            logger.error("Invalid manager status: {}", status);
+            throw new IllegalArgumentException("Invalid manager status: " + status);
+        }
     }
 
     public List<Manager> findManagersByRole(String role) {

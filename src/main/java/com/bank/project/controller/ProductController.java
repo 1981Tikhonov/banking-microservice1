@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @RestController
@@ -140,7 +141,7 @@ public class ProductController {
     @GetMapping("/filter/interestRate/{interestRate}")
     public ResponseEntity<List<Product>> getProductsByInterestRate(@PathVariable Double interestRate) {
         logger.info("Request to fetch products with interest rate: {}", interestRate);
-        List<Product> products = productService.findProductsByInterestRate(interestRate);
+        List<Product> products = productService.findProductsByInterestRate(BigDecimal.valueOf(interestRate));
         logger.info("Products found with interest rate {}: {}", interestRate, products.size());
         return ResponseEntity.ok(products);
     }
@@ -152,7 +153,7 @@ public class ProductController {
     @GetMapping("/filter/creditLimit/{creditLimit}")
     public ResponseEntity<List<Product>> getProductsByCreditLimit(@PathVariable Double creditLimit) {
         logger.info("Request to fetch products with credit limit: {}", creditLimit);
-        List<Product> products = productService.findProductsByCreditLimit(creditLimit);
+        List<Product> products = productService.findProductsByCreditLimit(BigDecimal.valueOf(creditLimit));
         logger.info("Products found with credit limit {}: {}", creditLimit, products.size());
         return ResponseEntity.ok(products);
     }

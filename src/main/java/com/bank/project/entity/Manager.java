@@ -1,5 +1,6 @@
 package com.bank.project.entity;
 
+import com.bank.project.entity.enums.ManagerStatus;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,8 +23,9 @@ public class Manager {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String status;
+    private ManagerStatus status;
 
     private String description;
 
@@ -39,11 +41,27 @@ public class Manager {
     @Column(nullable = false)
     private String role;  // Роль (например, ADMIN или USER)
 
+    private String email;
+    private String position;
+    private String phone;
+
     public Manager(long l, String john, String doe, String active, String admin, Object o, Object o1, Object o2) {
 
     }
 
     public Manager() {
 
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 }
