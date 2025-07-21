@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.30.xsd">
+    <changeSet id="1734032371265-6" author="admin">
+        <!-- First update existing null values -->
+        <update tableName="transaction">
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+            <where>created_at IS NULL</where>
+        </update>
+        
+        <!-- Then set NOT NULL constraint -->
+        <modifyDataType tableName="transaction" columnName="created_at" newDataType="timestamp NOT NULL"/>
+    </changeSet>
+</databaseChangeLog>
